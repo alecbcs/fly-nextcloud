@@ -112,7 +112,7 @@ jobs:
 
               # Create volume for redis app
               fly volumes create nextcloud_data \
-                 --encrypted=false \
+                 --no-encryption \
                  --size 1 \
                  --region ${{ env.fly_app_region }} \
                  --app ${{ env.fly_app_name }}
