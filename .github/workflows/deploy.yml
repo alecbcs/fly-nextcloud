@@ -1,0 +1,140 @@
+name: (Re)Deploy Fly-Nextcloud
+on:
+  # Allow for running the deployment manually
+  workflow_dispatch:
+
+  # Re-deploy the Nextcloud application to Fly on pushes to the main branch
+  push:
+    branches:
+      - main
+
+  # Periodically run the workflow to re-deploy updated containers
+  schedule:
+    - cron: '0 9 * * 0'
+
+jobs:
+  update-deploy-nextcloud:
+    runs-on: ubuntu-latest
+
+    env:
+      fly_org: ${{ secrets.FLY_ORG }}
+      fly_api_token: ${{ secrets.FLY_API_TOKEN }}
+      fly_app_name: ${{ secrets.FLY_APP_NAME }}
+      fly_app_region: ${{ secrets.FLY_APP_REGION }}
+      fly_db_password: ${{ secrets.FLY_DB_PASSWORD }}
+      fly_redis_password: ${{ secrets.FLY_REDIS_PASSWORD }}
+      s3_bucket_name: ${{ secrets.S3_BUCKET_NAME }}
+      s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+      s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+      s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Fly
+        run: |
+          # Install flyctl application
+          curl -L https://fly.io/install.sh | FLYCTL_INSTALL=/usr/local sh
+
+      - name: Deploy & Check Postgres Cluster
+        run: |
+
+          # Set FLY_API_TOKEN for user authentication
+          export FLY_API_TOKEN=${{ env.fly_api_token }}
+
+          # Check if the postgres cluster has already been deployed
+          if [ -z "$(fly pg list | grep ${{ env.fly_app_name }}-db)" ]; then
+              # If the postgres cluster has not already been deployed, deploy it
+              fly pg create --name "${{ env.fly_app_name }}-db" \
+                            --organization "${{ env.fly_org }}" \
+                            --region "${{ env.fly_app_region }}" \
+                            --vm-size "shared-cpu-1x" \
+                            --volume-size "1" \
+                            --initial-cluster-size "1" \
+                            --password "${{ env.fly_db_password }}"
+          fi
+
+      - name: Deploy Redis App
+        run: |
+
+          # Set FLY_API_TOKEN for user authentication
+          export FLY_API_TOKEN=${{ env.fly_api_token }}
+
+          # Check if the Redis app has already been deployed
+          if [ -z "$(fly apps list | grep '${{ env.fly_app_name }}-redis')" ]; then
+              # Create the redis app
+              fly launch --name ${{ env.fly_app_name }}-redis \
+                         --no-deploy \
+                         --org ${{ env.fly_org }} \
+                         --region ${{ env.fly_app_region }}
+
+              # Create volume for redis app
+              fly volumes create redis_data \
+                 --size 1 \
+                 --region ${{ env.fly_app_region }} \
+                 --app ${{ env.fly_app_name }}-redis
+
+              # Clean up generated fly.toml config
+              rm fly.toml
+
+          fi
+
+          # Enter Redis config
+          cd redis
+
+          # Generate Redis config file
+          sed -i "s/%fly_app_name%/${{ env.fly_app_name }}/g" fly.toml
+          sed -i "s/%fly_redis_password%/${{ env.fly_redis_password }}/g" fly.toml
+
+          # Deploy Redis
+          fly deploy || true
+
+          # Leave Redis config
+          cd ..
+
+      - name: Deploy Nextcloud App
+        run: |
+
+          # Set FLY_API_TOKEN for user authentication
+          export FLY_API_TOKEN=${{ env.fly_api_token }}
+
+          # Check if the nextcloud app has already been deployed
+          if [ -z "$(fly apps list | grep '${{ env.fly_app_name }}[^-]')" ]; then
+              # Create the nextcloud app
+              fly launch --name ${{ env.fly_app_name }} \
+                         --no-deploy \
+                         --org ${{ env.fly_org }} \
+                         --region ${{ env.fly_app_region }}
+
+              # Scale nextcloud memory to 512MB
+              fly scale memory 512
+
+              # Create volume for redis app
+              fly volumes create nextcloud_data \
+                 --encrypted=false \
+                 --size 1 \
+                 --region ${{ env.fly_app_region }} \
+                 --app ${{ env.fly_app_name }}
+
+              # Clean up generated fly.toml config
+              rm fly.toml
+          fi
+
+          # Enter Nextcloud config
+          cd nextcloud
+
+          # Generate Nextcloud config file
+          sed -i "s/%fly_app_name%/${{ env.fly_app_name }}/g" fly.toml
+          sed -i "s/%fly_redis_password%/${{ env.fly_redis_password }}/g" fly.toml
+          sed -i "s/%fly_db_password%/${{ env.fly_db_password }}/g" fly.toml
+          sed -i "s/%s3_bucket_name%/${{ env.s3_bucket_name }}/g" fly.toml
+          sed -i "s/%s3_access_key%/${{ env.s3_access_key }}/g" fly.toml
+          sed -i "s/%s3_secret_key%/${{ env.s3_secret_key }}/g" fly.toml
+          sed -i "s/%s3_endpoint%/${{ env.s3_endpoint }}/g" fly.toml
+
+          # Deploy Nextcloud
+          fly deploy
+
+          # Leave Nextcloud config
+          cd ..

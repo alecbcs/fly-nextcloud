@@ -1,0 +1,108 @@
+name: Maintain Fly-Nextcloud
+on:
+  # Allow for running the deployment manually
+  workflow_dispatch:
+
+  # Periodically run the workflow to cleanup s3 and check postgres size.
+  schedule:
+    - cron: '0 9 * * *'
+
+jobs:
+  resize-db-cleanup-s3:
+    runs-on: ubuntu-latest
+
+    env:
+      fly_org: ${{ secrets.FLY_ORG }}
+      fly_api_token: ${{ secrets.FLY_API_TOKEN }}
+      fly_app_name: ${{ secrets.FLY_APP_NAME }}
+      fly_app_region: ${{ secrets.FLY_APP_REGION }}
+      fly_app_url: ${{ secrets.FLY_APP_URL}}
+      fly_db_password: ${{ secrets.FLY_DB_PASSWORD }}
+      fly_redis_password: ${{ secrets.FLY_REDIS_PASSWORD }}
+      s3_bucket_name: ${{ secrets.S3_BUCKET_NAME }}
+      s3_endpoint: ${{ secrets.S3_ENDPOINT }}
+      s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+      s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Fly
+        run: |
+          # Install flyctl application
+          curl -L https://fly.io/install.sh | FLYCTL_INSTALL=/usr/local sh
+
+      - name: Check Postgres Size
+        run: |
+
+          # Set FLY_API_TOKEN for user authentication
+          export FLY_API_TOKEN=${{ env.fly_api_token }}
+
+          # Else check if the postgres volume needs to be resized
+          # Get the size of the postgres volume in GB
+          vol_info=($(fly volumes list -a ${{ env.fly_app_name }}-db | grep GB))
+          vol_size_gb=$(echo ${vol_info[3]} | awk '{ print substr( $0, 1, length($0)-2 ) }')
+
+          # Get the size of the database in bytes
+          db_size_bytes=$(curl -s "https://api.fly.io/prometheus/${{ env.fly_org }}/api/v1/query?" \
+                --data-urlencode 'query=pg_database_size_bytes{app="${{ env.fly_app_name }}-db"}'\
+                --data-urlencode "time=$(date +%s)" \
+                -H "Authorization: Bearer ${{ env.fly_api_token }}" \
+                | jq '.data.result[] | select(.metric.datname == "postgres") | .value[1]')
+
+          # Then convert the database size to GB
+          db_size_gb=$(awk 'BEGIN { print "$db_size_bytes/1073741824" }';)
+
+          # Check if the database size is greater than 89% of the total volume size
+          if [ -z $(awk -v db_s=$db_size_gb -v vol_s=$vol_size_gb \
+               'BEGIN { if (db_s/vol_s < 0.9) print "less" }') ]; then
+              # If the database size is >= 90% of the total volume size
+              # increase the size of the volume
+              fly volumes create pg_data \
+                 --size $(awk -v vol_size=$vol_size_gb 'BEGIN { print vol_size + 1}') \
+                 --region ${{ env.fly_app_region }} \
+                 --app ${{ env.fly_app_name }}-db
+
+              # Scale the postgres cluster to 2 instances temporarily
+              fly scale count 2 --app ${{ env.fly_app_name }}-db
+
+              # Wait for the second instance finish syncing and adopt the "replica" status
+              while [ -z "$(fly status --app ${{ env.fly_app_name}}-db | grep replica)" ]
+              do
+                sleep 15
+              done
+
+              # Delete the old smaller volume
+              fly volumes delete -y ${vol_info[0]}
+
+              # Scale the postgres cluster back to 1 instance
+              fly scale count 1 --app ${{ env.fly_app_name }}-db
+
+              # Wait for the new instance to adopt the "leader" status
+              while [ -z "$(fly status --app ${{ env.fly_app_name}}-db | grep leader)" ]
+              do
+                sleep 15
+              done
+
+          fi
+
+      - name: Cleanup Aborted Uploads from S3 Backend
+        run: |
+          # Install rclone
+          curl https://rclone.org/install.sh | sudo bash
+
+          # Create rclone config
+          mkdir $HOME/.config/rclone
+
+          cat <<EOF > $HOME/.config/rclone/rclone.conf
+          [s3]
+          type = s3
+          endpoint = ${{ env.s3_endpoint }}
+          access_key_id = ${{ env.s3_access_key }}
+          secret_access_key = ${{ env.s3_secret_key }}
+
+          EOF
+
+          # Attempt cleanup cancelled multi-part uploads
+          rclone cleanup s3:${{ env.s3_bucket_name }}

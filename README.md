@@ -1,2 +1,2 @@
 # fly-nextcloud
-A Nextcloud Deployment &amp; Management System for Fly.io
+A Nextcloud Deployment &amp; Management System on Fly.io
