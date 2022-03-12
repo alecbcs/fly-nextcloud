@@ -4,7 +4,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     sudo \
     ffmpeg \
-    imagemagick
+    libmagickcore-6.q16-6-extra
 
 COPY new_entrypoint.sh /new_entrypoint.sh
 
