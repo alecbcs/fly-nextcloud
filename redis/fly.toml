@@ -30,3 +30,7 @@ processes = []
 [metrics]
   port = 9091
   path = "/metrics"
+
+[[mounts]]
+  destination = "/data"
+  source = "redis_data"
