@@ -16,6 +16,17 @@ processes = []
   allowed_public_ports = []
   auto_rollback = true
 
+[[services]]
+  internal_port = 6379
+  protocol = "tcp"
+  script_checks = []
+  http_checks = []
+
+  [services.concurrency]
+    hard_limit = 2500
+    soft_limit = 2000
+    type = "connections"
+
 [metrics]
   port = 9091
   path = "/metrics"
