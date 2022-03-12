@@ -88,7 +88,7 @@ jobs:
           sed -i "s/%fly_redis_password%/${{ env.fly_redis_password }}/g" fly.toml
 
           # Deploy Redis
-          fly deploy || true
+          fly deploy
 
           # Leave Redis config
           cd ..
