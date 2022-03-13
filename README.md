@@ -77,7 +77,7 @@ that means your chosen name is available.
 
 #### Manual
 1. Clone this repository
-2. Open `vars.sh` and add your custom values to,
+2. Open vars.sh and add your custom values to,
    ```
    export FLY_ORG=
    export FLY_APP_NAME=
