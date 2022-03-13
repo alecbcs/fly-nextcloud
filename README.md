@@ -131,7 +131,7 @@ occ config:system:set overwriteprotocol --value="https"
 
 #### Increase Log Level to 3 (Errors Only) to Improve Speed
 ```
-occ config:system:set loglevel --value=3
+occ config:system:set loglevel --value 3
 ```
 
 #### Exit
