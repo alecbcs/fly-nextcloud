@@ -123,6 +123,17 @@ occ config:system:set jpeg_quality --value 60
 occ config:app:set preview jpeg_quality --value="60"
 ```
 
+#### Fix Nextcloud Desktop & Mobile Login Auth Errors
+```
+occ config:system:set overwritehost --value="YOURNAME.fly.dev"
+occ config:system:set overwriteprotocol --value="https"
+```
+
+#### Increase Log Level to 3 (Errors Only) to Improve Speed
+```
+occ config:system:set loglevel --value=3
+```
+
 #### Exit
 To leave your ssh session type,
 ```
