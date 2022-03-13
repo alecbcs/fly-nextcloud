@@ -39,7 +39,7 @@ jobs:
           # Set FLY_API_TOKEN for user authentication
           export FLY_API_TOKEN=${{ env.fly_api_token }}
 
-          # Else check if the postgres volume needs to be resized
+          # Check if the postgres volume needs to be resized
           # Get the size of the postgres volume in GB
           vol_info=($(fly volumes list -a ${{ env.fly_app_name }}-db | grep GB))
           vol_size_gb=$(echo ${vol_info[3]} | awk '{ print substr( $0, 1, length($0)-2 ) }')

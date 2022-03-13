@@ -4,7 +4,7 @@ A Nextcloud Deployment &amp; Management System for Fly.io
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Pricing](#pricing)
+- [Cluster Pricing](#cluster-pricing)
 - [Getting Started](#getting-started)
   - [Making an Account on Fly.io](#making-an-account-on-fly-io)
   - [Create a S3 Storage Bucket](#create-a-s3-storage-bucket)
@@ -16,24 +16,29 @@ A Nextcloud Deployment &amp; Management System for Fly.io
 - [License](#license)
 
 ## Introduction
+Similar to a 1-click app from DigitalOcean or Linode this project aims to provide a simple way to install a [Nextcloud](https://github.com/nextcloud) cluster on [Fly.io](https://fly.io) using an S3 bucket as primary storage. The idea is that you should be able to fork this repository, add your own credintials as repository secrets, and then start a GitHub Action to build your Nextcloud cluster.
 
+Unlike traditional 1-click apps however, this project also aims to tackle the task of periodically updating and maintaining your Nextcloud cluster through the use of GitHub actions. A maintenance job will spin up daily to check the size of your Postgres database and dynamically resize the supporting Fly volume if you are running out of space. Additionally, the (re)deployment action will run once a week to check for updates and apply them to your cluster.
 
-## Pricing
+## Cluster Pricing
 #### Free Allowances
 Checkout the details of Fly's free resources [here](https://fly.io/docs/about/pricing/#free-allowances).
 
 #### Fly.io Virtual Machines
-|           |    CPU    |   RAM   |  Price  |
-|-----------|-----------|---------|---------|
-| Postgres  | 1 shared  | 256MB   | $1.94   |
-| Redis     | 1 shared  | 256MB   | $1.94   |
-| Nextcloud | 1 shared  | 512MB   | $3.82   |
+Running this workflow will generate a Nextcloud cluster by spinning up the following virtual machines on fly,
+
+|            |    CPU    |   RAM   |  Price  |
+|------------|-----------|---------|---------|
+| Postgres   | 1 shared  | 256MB   | $1.94   |
+| Redis      | 1 shared  | 256MB   | $1.94   |
+| Nextcloud  | 1 shared  | 512MB   | $3.82   |
 
 Total Cost: `$7.70/Month`
+
 Total Cost (with Free Allowences): `$1.88/Month`
 
 #### S3 Storage Providers
-In order to prevent the appearance of bias/possible conflicts of interest, I won't recommend a specific cloud storage provider for you to use. I've listed a couple of possible options below that I've used in the past but you can use any S3 compatible storage system.
+In order to prevent any sense of bias/possible conflicts of interest, I won't recommend a specific cloud storage provider for you to use. I've listed a couple of possible options below that I've used in the past however, you can use any S3 compatible storage system.
 
 |                                                               |                Storage              |      Egress     |  Monthly Minimum  |
 |---------------------------------------------------------------|-------------------------------------|-----------------|-------------------|
@@ -64,7 +69,7 @@ and if you get back a response that looks like,
 Host YOURNAME.fly.dev not found: 3(NXDOMAIN)
 ```
 
-that means your name is available!
+that means your chosen name is available.
 
 ### Deploying Nextcloud
 #### GitHub Workflow (Recommended)
@@ -79,6 +84,7 @@ that means your name is available!
    export FLY_APP_REGION=
    export FLY_DB_PASSWORD=
    export FLY_REDIS_PASSWORD=
+   export S3_BUCkET_NAME=
    export S3_ENDPOINT=
    export S3_ACCESS_KEY=
    export S3_SECRET_KEY=
@@ -86,6 +92,42 @@ that means your name is available!
 3. Run `chmod a+x ./deploy.sh`
 4. Run `./deploy.sh`
 5. Run `flyctl open -a YOUR_FLY_APP_NAME`
+
+### Nextcloud Suggestions
+Here are a couple of my personal suggestions for your new Nextcloud instance.
+
+If you've never used Fly's ssh functionality before you should first type,
+```
+flyctl ssh issue
+```
+on your local computer.
+
+Then after logging into your Nextcloud web interface for the first time, ssh into your cluster by running,
+```
+flyctl ssh console -a YOUR_NAME
+```
+
+#### Setup OCC Alias
+```
+alias occ='sudo -u www-data PHP_MEMORY_LIMIT=512M php /var/www/html/occ'
+```
+
+#### Improve Image Thumbnail Generation
+```
+occ config:app:set previewgenerator squareSizes --value="32 256"
+occ config:app:set previewgenerator widthSizes  --value="256 384"
+occ config:app:set previewgenerator heightSizes --value="256"
+occ config:system:set preview_max_x --value 2048
+occ config:system:set preview_max_y --value 2048
+occ config:system:set jpeg_quality --value 60
+occ config:app:set preview jpeg_quality --value="60"
+```
+
+#### Exit
+To leave your ssh session type,
+```
+exit
+```
 
 ## Maintenance Tasks
 ### Automatically Scaling Postgres's Volume
