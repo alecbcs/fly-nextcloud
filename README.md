@@ -59,6 +59,13 @@ Create an S3 bucket and key on your chosen cloud provider then save the `ACCESS_
 ### Naming Your Nextcloud Cluster
 Before you can deploy your Nextcloud cluster we'll need to give it a name and check if that name is available on Fly. Unless you've got a custom domain, this name is how you'll access your Nextcloud cluster from the web. (`YOURNAME.fly.dev`)
 
+### Picking a `FLY_APP_REGION`
+Before you deploy your Nextcloud cluster we'll also need to decide which fly data center to launch it in. To explore the available fly regions run,
+```
+flyctl platform regions
+```
+remember the three letter acronym of the region closest to you.
+
 To check if your name is available run,
 ```
 host YOURNAME.fly.dev
@@ -73,7 +80,25 @@ that means your chosen name is available.
 
 ### Deploying Nextcloud
 #### GitHub Workflow (Recommended)
-
+1. Fork this repository (click fork in the top right)
+2. Go to your new repository's settings >> secrets >> action's secrets
+3. Create new secrets for each of the following,
+   ```
+   FLY_ORG
+   FLY_APP_NAME
+   FLY_APP_REGION
+   FLY_DB_PASSWORD
+   FLY_REDIS_PASSWORD
+   S3_BUCKET_NAME
+   S3_BUCKET_ENDPOINT
+   S3_BUCKET_ACCESS_KEY
+   S3_BUCKET_SECRET_KEY
+   ```
+4. Now go to your repositories "Actions" tab. You should see two actions, (re)deploy & maintenance.
+5. Click on (re)deploy & enable the workflow for your fork.
+6. Now manually run your workflow by clicking "Run Workflow" on the right of the screen. Your workflow should now begin and automatically deploy your Nextcloud cluster.
+7. To automatically resize your postgres DB when needed, go back to the "Actions" tab and this time enable the "Maintenance" workflow.
+8. Once your deployment workflow is done you should be good to login to your new Nextcloud instance at `YOURNAME.fly.dev`.
 
 #### Manual
 1. Clone this repository
@@ -129,7 +154,7 @@ occ config:system:set overwritehost --value="YOURNAME.fly.dev"
 occ config:system:set overwriteprotocol --value="https"
 ```
 
-#### Increase Log Level to 3 (Errors Only) to Improve Speed
+#### Increase Log Level to 3 (Errors Only) to Improve Page Load Speed
 ```
 occ config:system:set loglevel --value 3
 ```
