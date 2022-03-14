@@ -12,6 +12,7 @@ A Nextcloud Deployment &amp; Management System for Fly.io
   - [Deploying Nextcloud](#deploying-nextcloud)
     - [GitHub Workflow (Recommended)](#github-workflow-recommended)
     - [Manual](#manual)
+- [Nextcloud Suggestions](#nextcloud-suggestions)
 - [Maintenance Tasks](#maintenance-tasks)
 - [License](#license)
 
@@ -118,7 +119,7 @@ that means your chosen name is available.
 4. Run `./deploy.sh`
 5. Run `flyctl open -a YOUR_FLY_APP_NAME`
 
-### Nextcloud Suggestions
+## Nextcloud Suggestions
 Here are a couple of my personal suggestions for your new Nextcloud instance.
 
 If you've never used Fly's ssh functionality before you should first type,
