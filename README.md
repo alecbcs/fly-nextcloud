@@ -159,6 +159,11 @@ occ config:system:set overwriteprotocol --value="https"
 occ config:system:set loglevel --value 3
 ```
 
+#### Disable Rich Workspaces to Reduce Interface Clutter
+```
+occ config:app:set text workspace_available --value 0
+```
+
 #### Exit
 To leave your ssh session type,
 ```
