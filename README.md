@@ -52,7 +52,11 @@ In order to prevent any sense of bias/possible conflicts of interest, I won't re
 
 ## Getting Started
 ### Making an Account on Fly.io
-If you haven't already, you'll need to sign up for Fly and install the `flyctl` application by heading over to [fly.io](https://fly.io/docs/hands-on/start/). After you've completed Step 3 you may come back to this guide.
+If you haven't already, you'll need to sign up for Fly and install the `flyctl` application by heading over to [fly.io](https://fly.io/docs/hands-on/start/). After you've completed Step 3 you may come back to this guide. To see your `FLY_API_TOKEN` run the following command and save the output for later.
+
+```
+flyctl auth token
+```
 
 ### Create a S3 Storage Bucket
 Create an S3 bucket and key on your chosen cloud provider then save the `ACCESS_KEY_ID` and `SECRET_KEY` of your newly created key for later.
@@ -85,6 +89,7 @@ that means your chosen name is available.
 2. Go to your new repository's settings >> secrets >> action's secrets
 3. Create new secrets for each of the following,
    ```
+   FLY_API_TOKEN
    FLY_ORG
    FLY_APP_NAME
    FLY_APP_REGION
