@@ -186,7 +186,7 @@ If you deployed your Nextcloud cluster using the GitHub Workflow method, you sho
 If you deployed your Nextcloud cluster manually, you should set up a way to periodically run the `maintenance.sh` script to dynamically resize the volume attached to your Postgres instance.
 
 ### Cleaning up Incomplete Uploads from S3
-One of the long standing complaints in the community about using a Nextcloud cluster with a S3 backend is that Nextcloud doesn't cleanup failed uploads automatically. This means that your S3 bucket continue to grow in size with in-accessible failed uploads even if the size of your Nextcloud files stays the same. To prevent this from happening, this Workflow as well as `maintenance.sh` scrape for incomplete uploads in your S3 bucket and delete those older than 1 week.
+One of the long-standing complaints in the community about using a Nextcloud cluster with an S3 backend is that Nextcloud doesn't cleanup failed uploads automatically. This means that your S3 bucket continues to grow in size with inaccessible failed uploads even if the size of your Nextcloud files stays the same. To prevent this from happening, this Workflow as well as maintenance.sh scrape for incomplete uploads in your S3 bucket and delete those older than 1 week.
 
 ## Disclaimer
 
