@@ -91,9 +91,9 @@ that means your chosen name is available.
    FLY_DB_PASSWORD
    FLY_REDIS_PASSWORD
    S3_BUCKET_NAME
-   S3_BUCKET_ENDPOINT
-   S3_BUCKET_ACCESS_KEY
-   S3_BUCKET_SECRET_KEY
+   S3_ENDPOINT
+   S3_ACCESS_KEY
+   S3_SECRET_KEY
    ```
 4. Now go to your repositories "Actions" tab. You should see two actions, (re)deploy & maintenance.
 5. Click on (re)deploy & enable the workflow for your fork.
