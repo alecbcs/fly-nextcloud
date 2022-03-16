@@ -17,9 +17,9 @@ A Nextcloud Deployment &amp; Management System for Fly.io
 - [License](#license)
 
 ## Introduction
-Similar to a 1-click app from DigitalOcean or Linode this project aims to provide a simple way to install a [Nextcloud](https://github.com/nextcloud) cluster on [Fly.io](https://fly.io) using an S3 bucket as primary storage. The idea is that you should be able to fork this repository, add your own credintials as repository secrets, and then start a GitHub Action to build your Nextcloud cluster.
+Similar to a 1-click app from DigitalOcean or Linode this project aims to provide a simple way to install a [Nextcloud](https://github.com/nextcloud) cluster on [Fly.io](https://fly.io) using an S3 bucket as primary storage. The idea is that you should be able to fork this repository, add your own credentials as repository secrets, and then start a GitHub Action to build your Nextcloud cluster.
 
-Unlike traditional 1-click apps however, this project also aims to tackle the task of periodically updating and maintaining your Nextcloud cluster through the use of GitHub actions. A maintenance job will spin up daily to check the size of your Postgres database and dynamically resize the supporting Fly volume if you are running out of space. Additionally, the (re)deployment action will run once a week to check for updates and apply them to your cluster.
+This project aims to tackle the task of periodically updating and maintaining your Nextcloud cluster through the use of GitHub actions. Unlike traditional 1-click apps, a maintenance job will spin up daily to check the size of your Postgres database and dynamically resize the supporting Fly volume if you are running out of space. Additionally, the (re)deployment action will run once a week to check for updates and apply them to your cluster.
 
 ## Cluster Pricing
 #### Free Allowances
@@ -39,7 +39,7 @@ Total Cost: `$7.70/Month`
 Total Cost (with Free Allowences): `$1.88/Month`
 
 #### S3 Storage Providers
-In order to prevent any sense of bias/possible conflicts of interest, I won't recommend a specific cloud storage provider for you to use. I've listed a couple of possible options below that I've used in the past however, you can use any S3 compatible storage system.
+To avoid any possible conflicts of interest or sense of bias, I won't recommend a specific cloud storage provider for you to use. I've listed a couple of possible options below that I've used in the past, but you can use any S3 compatible storage system.
 
 |                                                               |                Storage              |      Egress     |  Monthly Minimum  |
 |---------------------------------------------------------------|-------------------------------------|-----------------|-------------------|
@@ -178,16 +178,18 @@ exit
 
 ## Maintenance Tasks
 ### Automatically Scaling Postgres's Volume
-Over time it may be nessisary to increase the size of the volume attached to your Postgres instance as your database grows.
 
-If you deployed your Nextcloud cluster using the GitHub Workflow method you shouldn't need to worry about this as we automatically run a workflow everyday to check if your database is within 90% of your volume size. If your database is greater than 90% of your volume size the workflow will dynamically increase the size of your volume.
+Over time, you may need to increase the size of the volume attached to your Postgres instance as your database grows.
 
-If your deployed your Nextcloud cluster manually you should setup a way to periodically run the `maintenance.sh` script to dynamically resize the volume attached to your Postgres instance.
+If you deployed your Nextcloud cluster using the GitHub Workflow method, you shouldn't need to worry about this, as we automatically run a workflow every day to check if your database is within 90% of your volume size. If your database is greater than 90% of your volume size, the workflow will dynamically increase the size of your volume.
+
+If you deployed your Nextcloud cluster manually, you should set up a way to periodically run the `maintenance.sh` script to dynamically resize the volume attached to your Postgres instance.
 
 ### Cleaning up Incomplete Uploads from S3
 One of the long standing complaints in the community about using a Nextcloud cluster with a S3 backend is that Nextcloud doesn't cleanup failed uploads automatically. This means that your S3 bucket continue to grow in size with in-accessible failed uploads even if the size of your Nextcloud files stays the same. To prevent this from happening, this Workflow as well as `maintenance.sh` scrape for incomplete uploads in your S3 bucket and delete those older than 1 week.
 
 ## Disclaimer
+
 Do not enable Nextcloud server-side encryption with this setup as it will lead to data corruption. See nextcloud/server#22077 for more details.
 
 ## License
