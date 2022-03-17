@@ -1,0 +1,16 @@
+name: Caffeinate Workflows
+on:
+  # Periodically run the workflow to re-enable workflows
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  caffeinate-workflows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Caffeinate Workflows
+        uses: alecbcs/caffeinate-workflows@v0.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_repository: ${{ github.repository }}
