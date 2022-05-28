@@ -70,8 +70,8 @@ if [ -z "$(fly apps list | grep ${FLY_APP_NAME}[^-])" ]; then
                --org ${FLY_ORG} \
                --region ${FLY_APP_REGION}
 
-    # Scale nextcloud memory to 512MB
-    fly scale memory 512
+    # Scale nextcloud memory to 1GB
+    fly scale memory 1024
 
     # Create volume for redis app
     fly volumes create nextcloud_data \
