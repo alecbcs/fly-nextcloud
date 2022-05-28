@@ -107,8 +107,8 @@ jobs:
                          --org ${{ env.fly_org }} \
                          --region ${{ env.fly_app_region }}
 
-              # Scale nextcloud memory to 512MB
-              fly scale memory 512
+              # Scale nextcloud memory to 1GB
+              fly scale memory 1024
 
               # Create volume for redis app
               fly volumes create nextcloud_data \
