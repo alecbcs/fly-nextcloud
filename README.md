@@ -32,11 +32,11 @@ Running this workflow will generate a Nextcloud cluster by spinning up the follo
 |------------|-----------|---------|---------|
 | Postgres   | 1 shared  | 256MB   | $1.94   |
 | Redis      | 1 shared  | 256MB   | $1.94   |
-| Nextcloud  | 1 shared  | 512MB   | $3.82   |
+| Nextcloud  | 1 shared  |   1GB   | $5.70   |
 
-Total Cost: `$7.70/Month`
+Total Cost: `$9.58/Month`
 
-Total Cost (with Free Allowences): `$1.88/Month`
+Total Cost (with Free Allowences): `$3.76/Month`
 
 #### S3 Storage Providers
 To avoid any possible conflicts of interest or sense of bias, I won't recommend a specific cloud storage provider for you to use. I've listed a couple of possible options below that I've used in the past, but you can use any S3 compatible storage system.
