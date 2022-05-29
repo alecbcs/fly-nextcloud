@@ -143,6 +143,11 @@ flyctl ssh console -a YOUR_NAME
 alias occ='sudo -u www-data PHP_MEMORY_LIMIT=512M php /var/www/html/occ'
 ```
 
+#### Limit Tashbin Size to 10GB
+```
+occ trashbin:size 10GB
+```
+
 #### Improve Image Thumbnail Generation
 ```
 occ config:app:set previewgenerator squareSizes --value="32 256"
@@ -153,6 +158,11 @@ occ config:system:set preview_max_y --value 2048
 occ config:system:set jpeg_quality --value 60
 occ config:app:set preview jpeg_quality --value="60"
 ```
+
+### Generate Image Thumbnails When System Idle Instead of On Demand
+Click on the circle at the very top right of the web interface > Click on Apps 
+> Search (Magnifying Glass) "Preview Generator" > Click on "Download and Enable"
+> Enter Your Password if Needed > Done!
 
 #### Fix Nextcloud Desktop & Mobile Login Auth Errors
 ```
