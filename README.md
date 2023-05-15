@@ -198,10 +198,6 @@ If you deployed your Nextcloud cluster manually, you should set up a way to peri
 ### Cleaning up Incomplete Uploads from S3
 One of the long-standing complaints in the community about using a Nextcloud cluster with an S3 backend is that Nextcloud doesn't cleanup failed uploads automatically. This means that your S3 bucket continues to grow in size with inaccessible failed uploads even if the size of your Nextcloud files stays the same. To prevent this from happening, this Workflow as well as maintenance.sh scrape for incomplete uploads in your S3 bucket and delete those older than 1 week.
 
-## Disclaimer
-
-Do not enable Nextcloud server-side encryption with this setup as it will lead to data corruption. See nextcloud/server#22077 for more details.
-
 ## License
 
 Copyright 2022 Alec Scott hi@alecbcs.com
